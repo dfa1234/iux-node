@@ -1,0 +1,11 @@
+export const config = {
+    server: {
+        port: 3001,
+        portSSL: 3443,
+    },
+    mailgun: {
+        apiKey: "APIKEY",
+        domain: "DOMAIN"
+    }
+};
+
