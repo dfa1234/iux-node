@@ -52,7 +52,7 @@ export const sendMail = (req: Request, res: Response, next: NextFunction) => {
     const mailDatas = {
         from: req.body.from,
         to: req.body.to,
-        subject: req.body.text,
+        subject: req.body.subject,
         text: req.body.text,
         attachment: CACHE_DIR + "/" + req.body.fileName
     };
