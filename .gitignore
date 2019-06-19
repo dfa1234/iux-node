@@ -8,3 +8,8 @@ node_modules
 logs/
 cache/
 config.ts
+
+tls/cert.pem
+tls/chain.pem
+tls/fullchain.pem
+tls/privkey.pem

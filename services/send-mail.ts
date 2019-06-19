@@ -33,7 +33,7 @@ const generatePdfFrom = async (url: string, filePath: string) => {
 
 export const sendMail = (req: Request, res: Response, next: NextFunction) => {
 
-    const CACHE_DIR = './cache/';
+    const CACHE_DIR = './cache';
 
     // const url = "https://news.ycombinator.com";
     // const fileName = "hn.pdf";
