@@ -1,7 +1,7 @@
 import {NextFunction, Request, Response} from "express";
 import * as Mailgun from "mailgun-js";
 import {config} from "../config";
-import {Observable, of} from "rxjs";
+import {from, Observable, of} from "rxjs";
 import * as puppeteer from "puppeteer";
 import {concatMap} from "rxjs/operators";
 
@@ -22,13 +22,22 @@ const sendMail$ = ({from, to, subject, text, attachment}:
 });
 
 
-const generatePdfFrom = async (url: string, filePath: string) => {
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.goto(url, {waitUntil: 'networkidle2'});
-    await page.pdf({path: filePath, format: 'A4'});
-    await browser.close();
-};
+const generatePdfFrom$ = (url: string, filePath: string) => {
+    let browser, page;
+    return from(puppeteer.launch())
+        .pipe(
+            concatMap(b => {
+                browser = b;
+                return from(browser.newPage());
+            }),
+            concatMap(p => {
+                page = p;
+                return from(page.goto(url, {waitUntil: 'networkidle2'}));
+            }),
+            concatMap(r => from(page.pdf({path: filePath, format: 'A4'}))),
+            concatMap(r => from(browser.close()))
+        )
+}
 
 
 export const sendMail = (req: Request, res: Response, next: NextFunction) => {
@@ -46,6 +55,9 @@ export const sendMail = (req: Request, res: Response, next: NextFunction) => {
     //     attachment: CACHE_DIR + "/" + fileName
     // };
 
+
+    debugger;
+
     const url = req.body.url;
     const fileName = req.body.fileName;
 
@@ -57,7 +69,7 @@ export const sendMail = (req: Request, res: Response, next: NextFunction) => {
         attachment: CACHE_DIR + "/" + req.body.fileName
     };
 
-    of(generatePdfFrom(url, CACHE_DIR + "/" + fileName))
+    generatePdfFrom$(url, CACHE_DIR + "/" + fileName)
         .pipe(
             concatMap(result => sendMail$(mailDatas))
         )
