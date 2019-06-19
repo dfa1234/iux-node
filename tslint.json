@@ -1,0 +1,10 @@
+{
+  "defaultSeverity": "warning",
+  "extends": "tslint-config-airbnb", // ./node_modules/tslint-config-airbnb/tslint.js
+  "rules": {
+    //"quotemark": [true, "double", "jsx-double"],
+    "ter-indent": [true, 4, { "SwitchCase": 2 }],
+    "variable-name": [false, "check-format"],
+    "max-line-length" : [false,120]
+  }
+}
