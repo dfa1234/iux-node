@@ -1,8 +1,12 @@
 import * as http from "http";
+import * as https from "https";
+import * as fs from "fs";
 import * as express from 'express';
 import * as  bodyParser from 'body-parser';
 import * as logger from 'morgan';
 import * as cookieParser from 'cookie-parser';
+const sslRootCas = require('ssl-root-cas');
+
 
 import {config} from "../config";
 
@@ -36,4 +40,17 @@ export const startServer = (app) => {
     http.createServer(app).listen(config.server.port, () => {
         console.log('server started');
     });
-}
+
+    if (fs.existsSync('./tls/privkey.pem') && fs.existsSync('./tls/fullchain.pem')) {
+        sslRootCas.inject();
+
+        const serverHttps = https.createServer({
+            cert: fs.readFileSync('./tls/fullchain.pem'),
+            key: fs.readFileSync('./tls/privkey.pem'),
+        }, app);
+
+        serverHttps.listen(config.server.portSSL, () => {
+            console.log('server ssl started');
+        });
+    }
+};
