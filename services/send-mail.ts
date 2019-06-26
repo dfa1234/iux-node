@@ -32,6 +32,7 @@ const generatePdfFrom$ = (url: string, filePath: string) => {
                 page = p;
                 page.on("pageerror", (err) => {
                     possibleError = "Page error: " + err.toString();
+                    console.log(possibleError);
                 });
                 return from(page.goto(url, {waitUntil: ['domcontentloaded', 'networkidle0']}));
             }),
