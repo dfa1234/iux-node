@@ -34,6 +34,10 @@ const generatePdfFrom$ = (url: string, filePath: string) => {
                     possibleError = "Page error: " + err.toString();
                     console.log(possibleError);
                 });
+                page.on('error', err=> {
+                    possibleError = "Page error: " + err.toString();
+                    console.log('error happen at the page: ', err);
+                });
                 return from(page.goto(url, {waitUntil: ['domcontentloaded', 'networkidle0']}));
             }),
             concatMap(r => from(page.pdf({path: filePath, format: 'A4', printBackground: true}))),
