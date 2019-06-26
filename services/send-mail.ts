@@ -78,13 +78,13 @@ export const sendMail = (req: Request, res: Response, next: NextFunction) => {
   
     generatePdfFrom$(url, CACHE_DIR + "/" + fileName)
         .pipe(
-            concatMap(possibleError => {
-              
+            concatMap(err => {
+              possibleError = err;
               return sendMail$(mailDatas))
             }
         )
         .subscribe(
-            possibleError => {
+            result => {
               
               if(possibleError){
                 result.pageErrors = possibleError;
