@@ -23,7 +23,7 @@ const sendMail$ = ({from, to, subject, text, attachment}:
 
 
 const generatePdfFrom$ = (url: string, filePath: string) => {
-    let browser, page;
+    let browser, page, possibleError;
     return from(puppeteer.launch())
         .pipe(
             concatMap(b => {
@@ -32,10 +32,15 @@ const generatePdfFrom$ = (url: string, filePath: string) => {
             }),
             concatMap(p => {
                 page = p;
+                page.on("pageerror", (err) => {  
+                    theTempValue = err.toString();
+                    possibleError = "Page error: " + theTempValue; 
+                }
                 return from(page.goto(url, {waitUntil: ['domcontentloaded', 'networkidle0']}));
             }),
             concatMap(r => from(page.pdf({path: filePath, format: 'A4',printBackground:true}))),
-            concatMap(r => from(browser.close()))
+            concatMap(r => from(browser.close())),
+            map(r => possibleError)
         )
 }
 
@@ -69,12 +74,25 @@ export const sendMail = (req: Request, res: Response, next: NextFunction) => {
         attachment: CACHE_DIR + "/" + req.body.fileName
     };
 
+    let possibleError = null;
+  
     generatePdfFrom$(url, CACHE_DIR + "/" + fileName)
         .pipe(
-            concatMap(result => sendMail$(mailDatas))
+            concatMap(possibleError => {
+              
+              return sendMail$(mailDatas))
+            }
         )
         .subscribe(
-            result => res.json(result)
+            possibleError => {
+              
+              if(possibleError){
+                result.pageErrors = possibleError;
+                console.log(possibleError)
+              }
+              
+              res.json(result)
+            }
         )
 
 };
