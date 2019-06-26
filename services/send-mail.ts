@@ -10,18 +10,17 @@ const sendMail$ = ({from, to, subject, text, attachment}:
     const mailgun = new Mailgun(config.mailgun);
 
     mailgun.messages().send({from, to, subject, text, attachment}, (error, body) => {
-        console.log(body);
         if (error) {
             observer.error({success: false, error: error});
         } else {
-            observer.next({success: true});
+            observer.next({success: true, status: body});
             observer.complete();
         }
     });
 });
 
 const generatePdfFrom$ = (url: string, filePath: string) => {
-    let browser, page, possibleError;
+    let browser, page, possibleErrors = null;
     return from(puppeteer.launch())
         .pipe(
             concatMap(b => {
@@ -30,36 +29,32 @@ const generatePdfFrom$ = (url: string, filePath: string) => {
             }),
             concatMap(p => {
                 page = p;
-                page.on("pageerror", (err) => {
-                    possibleError = "Page error: " + err.toString();
-                    console.log(possibleError);
+
+                page.on('console', conMess => {
+                    debugger;
+                    if (conMess && conMess._type === "error") {
+                        if (!possibleErrors) {
+                            possibleErrors = [];
+                        }
+
+                        possibleErrors.push({
+                                                location: conMess._location && conMess._location.url,
+                                                text: conMess._text
+                                            });
+                    }
                 });
-                page.on('error', err=> {
-                    possibleError = "Page error: " + err.toString();
-                    console.log('error happen at the page: ', err);
-                });
+
                 return from(page.goto(url, {waitUntil: ['domcontentloaded', 'networkidle0']}));
             }),
             concatMap(r => from(page.pdf({path: filePath, format: 'A4', printBackground: true}))),
             concatMap(r => from(browser.close())),
-            map(r => possibleError)
+            map(r => possibleErrors)
         );
 };
 
 export const sendMail = (req: Request, res: Response, next: NextFunction) => {
 
     const CACHE_DIR = './cache';
-
-    // const url = "https://news.ycombinator.com";
-    // const fileName = "hn.pdf";
-    //
-    // const mailDatas = {
-    //     from: "iux26000@gmail.com",
-    //     to: "dfaure123@gmail.com",
-    //     subject: "Nouveau mail",
-    //     text: "Ci joint le PDF",
-    //     attachment: CACHE_DIR + "/" + fileName
-    // };
 
     debugger;
 
@@ -74,24 +69,24 @@ export const sendMail = (req: Request, res: Response, next: NextFunction) => {
         attachment: CACHE_DIR + "/" + req.body.fileName
     };
 
-    let possibleError = null;
+    let possibleErrors = null;
 
     generatePdfFrom$(url, CACHE_DIR + "/" + fileName)
         .pipe(
             concatMap(err => {
-                possibleError = err;
-                return sendMail$(mailDatas);
+                possibleErrors = err;
+                return sendMail$(mailDatas)
             })
         )
         .subscribe(
             result => {
-
-                if (possibleError) {
-                    result.pageErrors = possibleError;
-                    console.log(possibleError);
+                if(possibleErrors){
+                    result.pageErrors = possibleErrors;
                 }
-
                 res.json(result);
+            },
+            resError => {
+                res.json(resError);
             }
         );
 
