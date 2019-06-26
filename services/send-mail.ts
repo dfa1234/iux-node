@@ -32,7 +32,7 @@ const generatePdfFrom$ = (url: string, filePath: string) => {
             }),
             concatMap(p => {
                 page = p;
-                return from(page.goto(url, {waitUntil: 'networkidle2'}));
+                return from(page.goto(url, {waitUntil: ['domcontentloaded', 'networkidle0']}));
             }),
             concatMap(r => from(page.pdf({path: filePath, format: 'A4',printBackground:true}))),
             concatMap(r => from(browser.close()))
