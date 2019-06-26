@@ -1,7 +1,7 @@
 import {NextFunction, Request, Response} from "express";
 import * as Mailgun from "mailgun-js";
 import {config} from "../config";
-import {from, Observable} from "rxjs";
+import {from, Observable, of} from "rxjs";
 import * as puppeteer from "puppeteer";
 import {concatMap, map} from "rxjs/operators";
 
@@ -69,21 +69,20 @@ export const sendMail = (req: Request, res: Response, next: NextFunction) => {
         attachment: CACHE_DIR + "/" + req.body.fileName
     };
 
-    let possibleErrors = null;
 
     generatePdfFrom$(url, CACHE_DIR + "/" + fileName)
         .pipe(
-            concatMap(err => {
-                possibleErrors = err;
-                return sendMail$(mailDatas)
+            concatMap(possibleErrors => {
+                if(possibleErrors){
+                    return of({success:false, status:'js errors on the page detected',pageErrors:possibleErrors})
+                }else{
+                    return sendMail$(mailDatas)
+                }
             })
         )
         .subscribe(
-            result => {
-                if(possibleErrors){
-                    result.pageErrors = possibleErrors;
-                }
-                res.json(result);
+            resultMail => {
+                res.json(resultMail);
             },
             resError => {
                 res.json(resError);
