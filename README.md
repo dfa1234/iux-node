@@ -20,6 +20,7 @@ yarn
 #after creating certificates with certbot, in your repo:
 cd tls
 ./update-tls-certificates-prod.sh
+cd ../
 pm2 start index
 pm2 log
 ```
