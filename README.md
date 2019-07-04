@@ -1,6 +1,6 @@
 # iux-node
 
-How to setup on server (debian/ubuntu)
+How to setup on server (debian/ubuntu)  
 Install node 10 LTS, and yarn, then:
 
 ```bash
