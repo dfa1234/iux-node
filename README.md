@@ -1,9 +1,9 @@
 # iux-node
 
 How to setup on server (debian/ubuntu)  
-Install node 10 LTS, and yarn.
+Install node 10 LTS, and yarn.  
 For yarn do not forget to add 
-export PATH="$PATH:$(yarn global bin)" 
+`export PATH="$PATH:$(yarn global bin)"`
 to your ~/.bash_profile or ~/.bashrc or whatever
 
 
