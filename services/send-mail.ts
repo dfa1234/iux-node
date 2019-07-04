@@ -58,25 +58,19 @@ export const sendMail = (req: Request, res: Response, next: NextFunction) => {
 
     debugger;
 
-    const url = req.body.url;
-    const fileName = req.body.fileName;
-
-    const mailDatas = {
-        from: req.body.from,
-        to: req.body.to,
-        subject: req.body.subject,
-        text: req.body.text,
-        attachment: CACHE_DIR + "/" + req.body.fileName
-    };
-
-
-    generatePdfFrom$(url, CACHE_DIR + "/" + fileName)
+    generatePdfFrom$(req.body.url, CACHE_DIR + "/" + req.body.fileName)
         .pipe(
             concatMap(possibleErrors => {
                 if(possibleErrors){
                     return of({success:false, status:'js errors on the page detected',pageErrors:possibleErrors})
                 }else{
-                    return sendMail$(mailDatas)
+                    return sendMail$({
+                          from: req.body.from,
+                          to: req.body.to,
+                          subject: req.body.subject,
+                          text: req.body.text,
+                          attachment: CACHE_DIR + "/" + req.body.fileName
+                    })
                 }
             })
         )
