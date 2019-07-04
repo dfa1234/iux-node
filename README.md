@@ -10,6 +10,7 @@ to your ~/.bash_profile or ~/.bashrc or whatever
 In your repo now:
 ```bash
 cd iux-node
+mkdir cache
 cp config.ts.sample config.ts
 nano config.ts
 #setup config
