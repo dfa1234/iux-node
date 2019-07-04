@@ -17,8 +17,9 @@ cp config.ts.sample config.ts
 nano config.ts
 #setup config
 yarn
-#setup certbot then
-./tls/update-tls-certificates-prod.sh
+#setup certbot, then in your repo
+cd tls
+./update-tls-certificates-prod.sh
 pm2 start index
 pm2 log
 ```
