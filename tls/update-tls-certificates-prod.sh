@@ -4,7 +4,7 @@
 
 # copy keys
 
-export PATH_KEY=/etc/letsencrypt/live/dev.iaskin.fr
+export PATH_KEY=/etc/letsencrypt/live/iaskin.fr
 
 sudo cp ${PATH_KEY}/privkey.pem ./privkey.pem
 sudo cp ${PATH_KEY}/fullchain.pem ./fullchain.pem
